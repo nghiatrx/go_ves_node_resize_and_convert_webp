@@ -1,59 +1,45 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
-	"image"
-	"image/jpeg"
+	"io/ioutil"
 	"log"
 	"os"
 	"sync"
 	"time"
 
-	"github.com/chai2010/webp"
-	"github.com/nfnt/resize"
+	"github.com/davidbyttow/govips/v2/vips"
 )
 
 func handle(fileName string, index int, wg *sync.WaitGroup) {
 	defer wg.Done()
-	outputFile := fmt.Sprintf("./output-%d.webp", index)
-	resizedWidth := 1000
+	outputFile := fmt.Sprintf("./output/output-%d.webp", index)
+	resizedWidth := 1000.0
 
-	file, err := os.Open(fileName)
+	// Load the input image
+	inputImage, err := vips.NewImageFromFile(fileName)
 	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	img, _, err := image.Decode(file)
-	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("error loading input image: %w", err))
 	}
 
 	// Resize the image
-	resizedImg := resize.Resize(uint(resizedWidth), 0, img, resize.NearestNeighbor)
+	err = inputImage.Resize(resizedWidth/(float64(inputImage.Width())), vips.KernelAuto)
+	b, _, _ := inputImage.ExportWebp(&vips.WebpExportParams{Quality: 80})
 
-	var buf bytes.Buffer
-
-	if err := jpeg.Encode(&buf, resizedImg, nil); err != nil {
-		log.Fatal(err)
-	}
-
-	// Convert the resized JPG to WebP format
-	outputWebpFile, err := os.Create(outputFile)
+	err = ioutil.WriteFile(outputFile, b, 755)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Error writing to file:", err)
+		return
 	}
-	defer outputWebpFile.Close()
-
-	if err := webp.Encode(outputWebpFile, resizedImg, &webp.Options{Quality: 80}); err != nil {
-		log.Fatal(err)
-	}
-
 }
 
 func main() {
+	os.Setenv("VIPS_DEBUG", "0")
 	t1 := time.Now().UnixMilli()
+
+	vips.Startup(nil)
+
+	defer vips.Shutdown()
 
 	input := []string{
 		"./input/input-0.jpg",

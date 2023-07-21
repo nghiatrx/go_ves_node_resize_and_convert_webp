@@ -8,7 +8,7 @@ WORKDIR /usr/src/app
 COPY . .
 
 RUN apk add build-base
-RUN go clean -modcache
+RUN apk add vips-dev
 RUN go mod tidy
 RUN go build -o main main.go
 RUN chmod +x ./main

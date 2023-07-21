@@ -10,9 +10,9 @@ const input = [
 ]
 
 async function run() {
-    const len = input.length;
-
     const t1 = Date.now();
+
+    const len = input.length;
 
     for (let i = 0; i < len; i++) {
         await sharp(input[i])

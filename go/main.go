@@ -16,7 +16,7 @@ import (
 
 func handle(fileName string, index int, wg *sync.WaitGroup) {
 	defer wg.Done()
-	outputFile := fmt.Sprintf("./output/output-%d.webp", index)
+	outputFile := fmt.Sprintf("./output-%d.webp", index)
 	resizedWidth := 1000
 
 	file, err := os.Open(fileName)

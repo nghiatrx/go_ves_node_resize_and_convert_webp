@@ -16,8 +16,9 @@ async function run() {
 
     for (let i = 0; i < len; i++) {
         await sharp(input[i])
-            .resize(1000, { quatity: 80 })
-            .toFile(`./ouput/output-${i}.webp`);
+            .resize(1000)
+            .webp({ quality: 80 })
+            .toFile(`./output-${i}.webp`);
     }
 
     const t2 = Date.now();
